@@ -7,29 +7,26 @@ import random
 import cv2
 from keras.models import load_model
 import numpy as np
+from mtcnn.mtcnn import MTCNN
 #import tensorflow.compat.v1 as tf
 #tf.disable_v2_behavior() 
 from keras.preprocessing import image
 model = load_model('facefeatures_new_model.h5')
 
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
 def face_extractor(img):
     # Function detects faces and returns the cropped face
     # If no face detected, it returns the input image
-    
-    #gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-	faces = face_cascade.detectMultiScale(img, 1.3, 5)
-    
-	if faces is ():
-		return None
-    
-    # Crop all faces found
-	for (x,y,w,h) in faces:
-		cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,255),2)
-		cropped_face = img[y:y+h, x:x+w]
+	try:
+		detector = MTCNN()
+		a = detector.detect_faces(img)[0]
+		box = a.get('box')
+		cv2.rectangle(img , (box[0],box[1]) , (box[0]+box[2] , box[1]+box[3]) , (0,255,0) , 2)
+		cropped_face = img[box[1]:box[1]+box[3] , box[0]:box[0]+box[2]]
 
-	return cropped_face
+		return cropped_face
+	except:
+		pass    
 
 video_capture = cv2.VideoCapture(0)
 while True:
